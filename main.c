@@ -4,27 +4,30 @@
 #define DENOM 7
 //-------------------------------------------------------------------------
 // define functions
-// Node for puzzles
+// Node for HT and BFS
 typedef struct node
 {
-  int move;               // int moved to get to this puzzle
-  int *puzzle;            // puzzle
+  int move;               // int moved to get to this board
+  int *board;            // board
   struct node *parent;    // tracks for BFS
   struct node *nextHT;    // tracks for HT
-  struct node *next;      // tracks for linkedList PQ
-  struct node *prev;      // tracks for linkedList PQ
 } Node;
+
+typedef struct nodePQ
+{
+  struct node *htNode;   // HT node
+  struct nodePQ *next;      // tracks for linkedList PQ
+  struct nodePQ *prev;      // tracks for linkedList PQ
+} NodePQ;
 
 
 // linked list acting as priority queue
 typedef struct listPQ
 {
-  int size;
-  Node *head;
-  Node *tail;
+  NodePQ *head;
 } PQ;
 
-// open hash table for storing puzzles
+// DONE open hash table for storing boards
 typedef struct openHashTable
 {
   int size;
@@ -34,27 +37,31 @@ typedef struct openHashTable
 //-------------------------------------------------------------------------
 // initialize functions
 // Node for BFS and HT
-Node  *initializeNode(int move, int *puzzle, Node *parent, Node *nextHT, Node *next, Node *prev){
+Node  *initializeNode(int move, int *board, Node *parent, Node *nextHT){
   Node *newNode = malloc(sizeof(Node));
   newNode->move = move;
-  newNode->puzzle = puzzle;
+  newNode->board = board;
   newNode->parent = parent;
   newNode->nextHT = nextHT;
+  return newNode;
+}
+// Node for PQ
+NodePQ  *initializeNodePQ(Node *htNode, NodePQ *next, NodePQ *prev){
+  NodePQ *newNode = malloc(sizeof(NodePQ));
+  newNode->htNode = htNode;
   newNode->next = next;
   newNode->prev = prev;
   return newNode;
 }
 
-// priority queue for creating next puzzle
+// priority queue for creating next board
 PQ *initializelistPQ() {
 	PQ *newList = malloc(sizeof(PQ));
-  newList->size = 0;
   newList->head = NULL;
-  newList->tail = NULL;
   return newList;
 }
 
-// HT for storing previous puzzles
+// DONE HT for storing previous boards
 openHT *initializeopenHashTable(int size) {
 	openHT *hashTable = malloc(sizeof(openHT));
   hashTable->size = size;
@@ -65,13 +72,45 @@ openHT *initializeopenHashTable(int size) {
   return hashTable;
 }
 
+
+void generateNeighbors(){
+  // Take ptr from dequeue() ptr is a NodePQ
+  // parent = ptr;
+  
+  // find neighbor row-1, get move
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+    // else continue
+
+  // find neighbor row+1, get move
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+    // else continue
+
+  // find neighbor col-1, get move
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+    // else continue
+
+  // find neighbor col+1, get move
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+    // else continue
+  printf("Success");
+}
 //-------------------------------------------------------------------------
 // helper functions
-// generate neighbors
 
-
-// hash function
-int hashPuzzle(int *puzzle, unsigned int size, int k)
+// DONE hash function
+int hash(int *board, unsigned int size, int k)
 {
   unsigned int total=0;
   int i;
@@ -79,14 +118,14 @@ int hashPuzzle(int *puzzle, unsigned int size, int k)
   int m=0;
   for(i=0; i<k; i++){
       for(j=0; j<k; j++){
-        total = total + puzzle[i*(k-1)+j]*m;
+        total = total + board[i*(k-1)+j]*m;
           m++;
       }
     }
   return (total % size);
 }
 
-// hashsize, k value above 4 too large for factorial. (test cases later)
+// DONE hashsize, k value above 4 too large for factorial. (test cases later)
 unsigned int htSize(int k){
   int i = k*k;
   unsigned int size = 0;
@@ -97,8 +136,48 @@ unsigned int htSize(int k){
   return size;
 }
 
-//printBoard array
+// DONE?? insert to HT
+void insertHT(openHT *myHT, Node *nd, int position){
+  Node *ptr = myHT->table[position];
+  while(ptr!=NULL){
+    ptr=ptr->nextHT;
+  }
+  myHT->table[position] = nd;
+}
 
+// insert to PQ
+void insertPQ(PQ *myPQ, NodePQ *ndPQ){
+    NodePQ *last = myPQ->head;
+ 
+    if (myPQ->head == NULL) {
+      ndPQ->prev = NULL;
+      myPQ->head = ndPQ;
+      return;
+    }
+  
+    while (last->next != NULL)
+      last = last->next;
+  
+    last->next = ndPQ;
+    ndPQ->prev = last;
+ 
+    return;
+}
+
+// dequeue head from PQ
+Node *dequeuePQ(PQ *myPQ){
+  NodePQ *ptrPQ;
+  Node *ptr;
+  if(myPQ->head!=NULL){
+    ptrPQ = myPQ->head;
+    myPQ->head = myPQ->head->next;
+  }
+  ptr = ptrPQ->htNode;
+  free(ptrPQ);
+  return ptr;
+}
+
+// DONE printBoard array
 void printBoard(int *initial_board, int k){
   for(int i=0; i<k*k;i++){
     printf("%d ",initial_board[i]);
@@ -106,10 +185,11 @@ void printBoard(int *initial_board, int k){
   printf("\n");
 }
 
-int getZeroPos(int *puzzle,int k){
+// DONE get position of zero in array
+int getZeroPos(int *board,int k){
   int zeroPos=0;
   for(int i=0; i<k*k;i++){
-    if(puzzle[i]==0){
+    if(board[i]==0){
       zeroPos=i;
     }
   }
@@ -152,27 +232,55 @@ int main(int argc, char **argv)
     {
 		  fscanf(fp_in,"%d ",&initial_board[i]);
     }
-	printBoard(initial_board, k);//Assuming that I have a function to print the board, print it here to make sure I read the input board properly for DEBUG purposes
+	//printBoard(initial_board, k);  // check board input properly
 	fclose(fp_in);
   
 	////////////////////
-	// do the rest to solve the puzzle
+	// do the rest to solve the board
 	////////////////////
+  
   //-------------------------------------------------------------------------
+  //create goalState for board
+  int goalState[k*k];
+  for(int i=0;i<(k*k)-1;i++)
+    {
+		  goalState[i]=(i+1);
+    }
+  goalState[(k*k)-1] = 0;
+  //printBoard(goalState, k);  //check goalState
   size = htSize(k);
   // get zero position
   zeroPos=getZeroPos(initial_board,k);
   //printf("%d\n",zeroPos);
+  //-------------------------------------------------------------------------
   
-  
-  
+  PQ *myPQ = initializelistPQ();
+  openHT *myHT = initializeopenHashTable(size);
+
+
+  //insert initial_board
+  Node *nd = initializeNode(0, initial_board, NULL, NULL);
+  int position = hash(nd->board,size,k);
+  insertHT(myHT, nd, position);
+  NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
+  insertPQ(myPQ,ndPQ);
   
   // BFS rotation, while loop
-
-  //------------------------------------------------------------------------- //-------------------------------------------------------------------------
+  while(1){
+    Node *ptr = dequeuePQ(myPQ);
+    if(ptr->board == goalState)
+      printBoard(ptr->board, k);
+    else
+      generateNeighbors(ptr);
+  }
+  
+  // print solution via printing array in reverse
+  
+  //-------------------------------------------------------------------------
+  //-------------------------------------------------------------------------
 
 	//once you are done, you can use the code similar to the one below to print the output into file
-	//if the puzzle is NOT solvable use something as follows
+	//if the board is NOT solvable use something as follows
 	fprintf(fp_out, "#moves\n");
 	fprintf(fp_out, "no solution\n");
 	
