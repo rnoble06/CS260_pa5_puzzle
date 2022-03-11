@@ -164,35 +164,49 @@ int getZeroPos(int *board,int k){
 
 void generateNeighbors(Node *parent, int k){
   // Take ptr from dequeue() ptr is a NodePQ
+  // for array, to mimic matrix: array(index) = array(i*k+j)
   int zeroPos = getZeroPos(parent->board, k);
-  printf("%d\n",zeroPos);
+  int zeroRow = (int)zeroPos/k;
+  int zeroCol = zeroPos%k;
+  int maxRow = k*(k-1);
+  int maxCol = (k-1);
+  int move;
   // find neighbor row-1, get move
+  
+  if((zeroRow*k-k)>=0){
+    move = parent->board[(zeroRow*k-k)+zeroCol];
     //check HT
     // if not in HT
       // insert to HT
       // insert to PQ
-    // else continue
+  }
 
   // find neighbor row+1, get move
+  if((zeroRow*k+k)<=maxRow){
+    move = parent->board[(zeroRow*k+k)+zeroCol];
     //check HT
     // if not in HT
       // insert to HT
       // insert to PQ
-    // else continue
+  }
 
   // find neighbor col-1, get move
+  if((zeroCol-1)>=0){
+    move = parent->board[(zeroRow)*k+zeroCol-1];
     //check HT
     // if not in HT
       // insert to HT
       // insert to PQ
-    // else continue
+  }
 
   // find neighbor col+1, get move
+  if((zeroCol+1)<=maxCol){
+    move = parent->board[(zeroRow)*k+zeroCol+1];
     //check HT
     // if not in HT
       // insert to HT
       // insert to PQ
-    // else continue
+  }
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------

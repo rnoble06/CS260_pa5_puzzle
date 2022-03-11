@@ -72,40 +72,6 @@ openHT *initializeopenHashTable(int size) {
   return hashTable;
 }
 
-
-void generateNeighbors(){
-  // Take ptr from dequeue() ptr is a NodePQ
-  // parent = ptr;
-  
-  // find neighbor row-1, get move
-    //check HT
-    // if not in HT
-      // insert to HT
-      // insert to PQ
-    // else continue
-
-  // find neighbor row+1, get move
-    //check HT
-    // if not in HT
-      // insert to HT
-      // insert to PQ
-    // else continue
-
-  // find neighbor col-1, get move
-    //check HT
-    // if not in HT
-      // insert to HT
-      // insert to PQ
-    // else continue
-
-  // find neighbor col+1, get move
-    //check HT
-    // if not in HT
-      // insert to HT
-      // insert to PQ
-    // else continue
-  printf("Success");
-}
 //-------------------------------------------------------------------------
 // helper functions
 
@@ -196,6 +162,58 @@ int getZeroPos(int *board,int k){
   return zeroPos;
 }
 
+void generateNeighbors(Node *parent, int k){
+  // Take ptr from dequeue() ptr is a NodePQ
+  // for array, to mimic matrix: array(index) = array(i*k+j)
+  int zeroPos = getZeroPos(parent->board, k);
+  int zeroRow = zeroPos/k;
+  int zeroCol = zeroPos%k;
+  int minRow=0;  
+  int maxRow=k*(k-1);
+  int minCol=0;
+  int maxCol=(k-1);
+  int move;
+  // find neighbor row-1, get move
+  if((zeroRow-k)>=minRow){
+    move = parent->board[(zeroRow-k)*k+zeroCol];
+    printf("%d\n",move);
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+  }
+  
+
+  // find neighbor row+1, get move
+  if((zeroRow+k)<=maxRow){
+    move = parent->board[(zeroRow+k)*k+zeroCol];
+    printf("%d\n",move);
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+  }
+
+  // find neighbor col-1, get move
+  if((zeroCol-1)>=minCol){
+    move = parent->board[(zeroRow)*k+zeroCol-1];
+    printf("%d\n",move);
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+  }
+
+  // find neighbor col+1, get move
+  if((zeroCol+1)<=maxRow){
+    move = parent->board[(zeroRow)*k+zeroCol+1];
+    printf("%d\n",move);
+    //check HT
+    // if not in HT
+      // insert to HT
+      // insert to PQ
+  }
+}
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
@@ -271,7 +289,7 @@ int main(int argc, char **argv)
     if(ptr->board == goalState)
       printBoard(ptr->board, k);
     else
-      generateNeighbors(ptr);
+      generateNeighbors(ptr, k);
   }
   
   // print solution via printing array in reverse
