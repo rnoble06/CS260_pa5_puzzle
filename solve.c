@@ -36,6 +36,18 @@ typedef struct openHashTable{
   Node **table;
 } openHT;
 
+int checkGoal(int *ptrBoard, int *goalState, int k){
+  int flag = 0;
+  for(int i = 0; i < k*k; i++){
+      if (ptrBoard[i] != goalState[i]){
+        flag = 1;
+      }
+    }
+  if(flag==0)
+    return 1;
+  else return 0;
+}
+
 // Node for BFS and HT
 Node  *initializeNode(int move, int *board, Node *parent, Node *nextHT){
   Node *newNode = malloc(sizeof(Node));
@@ -109,11 +121,16 @@ unsigned int htSize(int k){
 }
 
 // insert to HT
-void insertHT(openHT *myHT, Node *nd, int position){
-  Node *ptr = myHT->table[position];
+void insertHT(openHT *myHT, Node *nd, int position, int k){
+  Node *ptr = malloc(sizeof(Node *));
+  ptr = myHT->table[position];
   while(ptr!=NULL){
-    ptr=ptr->nextHT;
+    if(checkGoal(ptr->board, nd->board, k)==1)
+      return;
+    else
+      ptr=ptr->nextHT;
   }
+  nd->nextHT = myHT->table[position];
   myHT->table[position] = nd;
 }
 
@@ -165,12 +182,23 @@ int getZeroPos(int *board,int k){
 }
 
 // create neighbor board
-int *createBoard(Node *parent, int *newBoard, int k){
+int *createBoard(Node *parent, int k){
+  int *newBoard = malloc(sizeof(int)*k*k);
   for(int i=0; i<k*k; i++){
     newBoard[i]=parent->board[i];
   }
   //printBoard(parent->board, k);
   return newBoard;
+}
+
+// create new nodes and insert
+void createNode(int *newBoard, openHT *myHT, int size, int k, PQ *myPQ, Node *parent, int move){
+  int position = hash(newBoard, size, k);
+  // insert to HT
+  Node *nd = initializeNode(move, newBoard, parent, NULL);
+  insertHT(myHT, nd, position, k);
+  // insert to PQ
+  insertToTailPQ(myPQ,nd);
 }
 
 // find board in HT
@@ -200,27 +228,22 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
   int maxRow = k*(k-1);
   int maxCol = (k-1);
   int move;
-  int newBoard[k*k];
-  //printf("%d\n",zeroPos);
+  int *newBoard = malloc(sizeof(int)*k*k);
+  
+  
   if((zeroRow*k-k)>=0){
+    int *newBoard = malloc(sizeof(int)*k*k);
     move = parent->board[(zeroRow*k-k)+zeroCol];
     //check HT
-    createBoard(parent, newBoard, k);
+    newBoard = createBoard(parent, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow*k-k)+zeroCol] = 0;
-    //printBoard(newBoard, k);
-    //printf("newBoard^\n");
     
     // if not in HT
-    if(!findHT(newBoard, myHT, size, k)){
+    if(findHT(newBoard, myHT, size, k)==0){
       //printBoard(newBoard, k);
       //printf("newBoard^\n");
-      int position = hash(newBoard, size, k);
-      // insert to HT
-      Node *nd = initializeNode(move, newBoard, parent, NULL);
-      insertHT(myHT, nd, position);
-      // insert to PQ
-      insertToTailPQ(myPQ,nd);
+      createNode(newBoard, myHT, size, k, myPQ, parent, move);
     } 
   }
 
@@ -228,18 +251,14 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
   if((zeroRow*k+k)<=maxRow){
     move = parent->board[(zeroRow*k+k)+zeroCol];
     //check HT
-    createBoard(parent, newBoard, k);
+    newBoard = createBoard(parent, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow*k+k)+zeroCol] = 0;
-    
     // if not in HT
-    if(!findHT(newBoard, myHT, size, k)){
-      int position = hash(newBoard, size, k);
-      // insert to HT
-      Node *nd = initializeNode(move, newBoard, parent, NULL);
-      insertHT(myHT, nd, position);
-      // insert to PQ
-      insertToTailPQ(myPQ,nd);
+    if(findHT(newBoard, myHT, size, k)==0){
+      //printBoard(newBoard, k);
+      //printf("newBoard 4^\n");
+      createNode(newBoard, myHT, size, k, myPQ, parent, move);
     }
   }
 
@@ -247,18 +266,14 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
   if((zeroCol-1)>=0){
     move = parent->board[(zeroRow)*k+zeroCol-1];
     //check HT
-    createBoard(parent, newBoard, k);
+    newBoard = createBoard(parent, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow)*k+zeroCol-1] = 0;
-    
     // if not in HT
-    if(!findHT(newBoard, myHT, size, k)){
-      int position = hash(newBoard, size, k);
-      // insert to HT
-      Node *nd = initializeNode(move, newBoard, parent, NULL);
-      insertHT(myHT, nd, position);
-      // insert to PQ
-      insertToTailPQ(myPQ,nd); 
+    if(findHT(newBoard, myHT, size, k)==0){
+      //printBoard(newBoard, k);
+      //printf("newBoard 4^\n");
+      createNode(newBoard, myHT, size, k, myPQ, parent, move);
     }
   }
 
@@ -266,32 +281,36 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
   if((zeroCol+1)<=maxCol){
     move = parent->board[(zeroRow)*k+zeroCol+1];
     //check HT
-    createBoard(parent, newBoard, k);
+    newBoard = createBoard(parent, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow)*k+zeroCol+1] = 0;
     
     // if not in HT
-    if(!findHT(newBoard, myHT, size, k)){
-      int position = hash(newBoard, size, k);
-      // insert to HT
-      Node *nd = initializeNode(move, newBoard, parent, NULL);
-      insertHT(myHT, nd, position);
-      // insert to PQ
-      insertToTailPQ(myPQ,nd);
+    if(findHT(newBoard, myHT, size, k)==0){
+      //printBoard(newBoard, k);
+      //printf("newBoard 4^\n");
+      createNode(newBoard, myHT, size, k, myPQ, parent, move);
     }
   }
 }
 
-int checkGoal(int *ptrBoard, int *goalState, int k){
-  int flag = 0;
-  for(int i = 0; i < k*k; i++){
-      if (ptrBoard[i] != goalState[i]){
-        flag = 1;
-      }
+void printHashTable(openHT *myHT){
+  for (int i=0; i<myHT->size;i++){
+    printf("Row %d: [",i);
+    Node *ptr = myHT->table[i];
+    while(ptr!=NULL){
+      printBoard(ptr->board, 3);
+      ptr = ptr->nextHT;
     }
-  if(flag==0)
-    return 1;
-  else return 0;
+    printf(" ]\n");
+  }
+}
+void printPQ(PQ *myPQ){
+  NodePQ *ptr = myPQ->head;
+    while(ptr!=NULL){
+      printBoard(ptr->htNode->board, 3);
+      ptr = ptr->next;
+    }
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
@@ -347,28 +366,32 @@ int main(int argc, char **argv)
   //insert initial_board
   Node *nd = initializeNode(0, initial_board, NULL, NULL);
   int position = hash(nd->board,size,k);
-  insertHT(myHT, nd, position);
-  
+  insertHT(myHT, nd, position, k);
   insertToTailPQ(myPQ,nd);
   
   // BFS rotation, while loop. Currently iterating fixed length until issues fixed.
   int i=0;
-  while(i<20){
+  while(1){
+    printPQ(myPQ);
+    printf("PQ ^\n");
     Node *ptr = dequeuePQ(myPQ);
-    if(ptr==NULL)
-      printf("Empty List!!");
+    if(ptr==NULL){
+      printf("Empty List!!\n");
       break;
-    //printBoard(ptr->board, k);
-    //printf("parentBoard^\n");
-    if(checkGoal(ptr->board, goalState, k)){
+    }
+    
+    if(checkGoal(ptr->board, goalState, k)==1){
       printf("Check board\n");
       //printBoard(ptr->board, k);
       break;
-      }
-    else
+    }
+    else{
       generateNeighbors(ptr, k, myHT, myPQ, size);
-    i++;
+    }
+    
   }
+  
+  printHashTable(myHT);
   //*************************************************************************
   //*************************************************************************
   //*************************************************************************
