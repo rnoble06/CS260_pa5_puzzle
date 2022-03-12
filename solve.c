@@ -169,7 +169,25 @@ int *createBoard(Node *parent, int *newBoard, int k){
   return newBoard;
 }
 
-void generateNeighbors(Node *parent, int k){
+int findHT(int *newBoard, openHT *myHT, int size, int k){
+  int position = hash(newBoard, size, k);
+  Node *ptr = myHT->table[position];
+  while(ptr!=NULL){
+    int flag = 0;
+    for(int i = 0; i < k*k; i++){
+      if (newBoard[i] != ptr->board[i]){
+        flag = 1;
+      }
+    }
+    if(flag = 0){
+      return 1;
+    }
+    ptr = ptr->nextHT;
+  }
+  return 0;
+}
+
+void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
   // for array, to mimic matrix: array(index) = array(i*k+j)
   int zeroPos = getZeroPos(parent->board, k);
   int zeroRow = (int)zeroPos/k;
@@ -178,20 +196,21 @@ void generateNeighbors(Node *parent, int k){
   int maxCol = (k-1);
   int move;
   int newBoard[k*k];
-  printf("%d\n",zeroPos);
+  //printf("%d\n",zeroPos);
   if((zeroRow*k-k)>=0){
     move = parent->board[(zeroRow*k-k)+zeroCol];
     //check HT
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow*k-k)+zeroCol] = 0;
-    printBoard(newBoard, k);
     // if not in HT
-    if(){
-      
+    if(!findHT(newBoard, myHT, size, k)){
+      //printf("Not in HT\n");
     }
       // insert to HT
+    
       // insert to PQ
+    
   }
 
   // find neighbor row+1, get move
@@ -201,10 +220,14 @@ void generateNeighbors(Node *parent, int k){
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow*k+k)+zeroCol] = 0;
-    printBoard(newBoard, k);
     // if not in HT
+    if(!findHT(newBoard, myHT, size, k)){
+      //printf("Not in HT\n");
       // insert to HT
+      
       // insert to PQ
+      
+    }
   }
 
   // find neighbor col-1, get move
@@ -214,10 +237,14 @@ void generateNeighbors(Node *parent, int k){
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow)*k+zeroCol-1] = 0;
-    printBoard(newBoard, k);
     // if not in HT
+    if(!findHT(newBoard, myHT, size, k)){
+      //printf("Not in HT\n");
       // insert to HT
+      
       // insert to PQ
+      
+    }
   }
 
   // find neighbor col+1, get move
@@ -227,10 +254,14 @@ void generateNeighbors(Node *parent, int k){
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow)*k+zeroCol+1] = 0;
-    printBoard(newBoard, k);
     // if not in HT
+    if(!findHT(newBoard, myHT, size, k)){
+      //printf("Not in HT\n");
       // insert to HT
+      
       // insert to PQ
+      
+    }
   }
   
 }
@@ -309,7 +340,7 @@ int main(int argc, char **argv)
     if(ptr->board == goalState)
       printBoard(ptr->board, k);
     else
-      generateNeighbors(ptr, k);
+      generateNeighbors(ptr, k, myHT, myPQ, size);
   }
   
   // print solution via printing array in reverse
