@@ -20,22 +20,19 @@ typedef struct nodePQ
   struct nodePQ *prev;      // tracks for linkedList PQ
 } NodePQ;
 
-
 // linked list acting as priority queue
 typedef struct listPQ
 {
   NodePQ *head;
 } PQ;
 
-// DONE open hash table for storing boards
+// open hash table for storing boards
 typedef struct openHashTable
 {
   int size;
   Node **table;
 } openHT;
 
-//-------------------------------------------------------------------------
-// initialize functions
 // Node for BFS and HT
 Node  *initializeNode(int move, int *board, Node *parent, Node *nextHT){
   Node *newNode = malloc(sizeof(Node));
@@ -61,7 +58,7 @@ PQ *initializelistPQ() {
   return newList;
 }
 
-// DONE HT for storing previous boards
+// HT for storing previous boards
 openHT *initializeopenHashTable(int size) {
 	openHT *hashTable = malloc(sizeof(openHT));
   hashTable->size = size;
@@ -72,12 +69,8 @@ openHT *initializeopenHashTable(int size) {
   return hashTable;
 }
 
-//-------------------------------------------------------------------------
-// helper functions
-
-// DONE hash function
-int hash(int *board, unsigned int size, int k)
-{
+// hash function
+int hash(int *board, unsigned int size, int k){
   unsigned int total=0;
   int i;
   int j;
@@ -91,7 +84,7 @@ int hash(int *board, unsigned int size, int k)
   return (total % size);
 }
 
-// DONE hashsize, k value above 4 too large for factorial. (test cases later)
+// hashsize, k value above 4 too large for factorial. (test cases later)
 unsigned int htSize(int k){
   int i = k*k;
   unsigned int size = 0;
@@ -102,7 +95,7 @@ unsigned int htSize(int k){
   return size;
 }
 
-// DONE?? insert to HT
+// insert to HT
 void insertHT(openHT *myHT, Node *nd, int position){
   Node *ptr = myHT->table[position];
   while(ptr!=NULL){
@@ -139,11 +132,10 @@ Node *dequeuePQ(PQ *myPQ){
     myPQ->head = myPQ->head->next;
   }
   ptr = ptrPQ->htNode;
-  free(ptrPQ);
   return ptr;
 }
 
-// DONE printBoard array
+// printBoard array
 void printBoard(int *initial_board, int k){
   for(int i=0; i<k*k;i++){
     printf("%d ",initial_board[i]);
@@ -151,7 +143,7 @@ void printBoard(int *initial_board, int k){
   printf("\n");
 }
 
-// DONE get position of zero in array
+// get position of zero in array
 int getZeroPos(int *board,int k){
   int zeroPos=0;
   for(int i=0; i<k*k;i++){
@@ -205,12 +197,15 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     newBoard[(zeroRow*k-k)+zeroCol] = 0;
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
-      //printf("Not in HT\n");
-    }
+      int position = hash(newBoard, size, k);
       // insert to HT
-    
+      Node *nd = initializeNode(move, newBoard, parent, NULL);
+      insertHT(myHT, nd, position);
       // insert to PQ
-    
+      NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
+      insertPQ(myPQ,ndPQ);
+      
+    }
   }
 
   // find neighbor row+1, get move
@@ -222,10 +217,13 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     newBoard[(zeroRow*k+k)+zeroCol] = 0;
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
-      //printf("Not in HT\n");
+      int position = hash(newBoard, size, k);
       // insert to HT
-      
+      Node *nd = initializeNode(move, newBoard, parent, NULL);
+      insertHT(myHT, nd, position);
       // insert to PQ
+      NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
+      insertPQ(myPQ,ndPQ);
       
     }
   }
@@ -239,10 +237,13 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     newBoard[(zeroRow)*k+zeroCol-1] = 0;
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
-      //printf("Not in HT\n");
+      int position = hash(newBoard, size, k);
       // insert to HT
-      
+      Node *nd = initializeNode(move, newBoard, parent, NULL);
+      insertHT(myHT, nd, position);
       // insert to PQ
+      NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
+      insertPQ(myPQ,ndPQ);
       
     }
   }
@@ -256,14 +257,29 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     newBoard[(zeroRow)*k+zeroCol+1] = 0;
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
-      //printf("Not in HT\n");
+      int position = hash(newBoard, size, k);
       // insert to HT
-      
+      Node *nd = initializeNode(move, newBoard, parent, NULL);
+      insertHT(myHT, nd, position);
       // insert to PQ
-      
+      NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
+      insertPQ(myPQ,ndPQ);
+
     }
   }
   
+}
+
+int checkGoal(int *ptrBoard, int *goalState, int k){
+  int flag = 0;
+  for(int i = 0; i < k*k; i++){
+      if (ptrBoard[i] != goalState[i]){
+        flag = 1;
+      }
+    }
+  if(flag==0)
+    return 1;
+  else return 0;
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
@@ -337,8 +353,10 @@ int main(int argc, char **argv)
   // BFS rotation, while loop
   while(1){
     Node *ptr = dequeuePQ(myPQ);
-    if(ptr->board == goalState)
+    if(checkGoal(ptr->board, goalState, k)){
       printBoard(ptr->board, k);
+      break;
+      }
     else
       generateNeighbors(ptr, k, myHT, myPQ, size);
   }
