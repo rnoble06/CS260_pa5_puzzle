@@ -101,25 +101,24 @@ void insertHT(openHT *myHT, Node *nd, int position){
   while(ptr!=NULL){
     ptr=ptr->nextHT;
   }
-  myHT->table[position] = nd;
+  nd->nextHT = myHT->table[position];
 }
 
 // insert to PQ
 void insertPQ(PQ *myPQ, NodePQ *ndPQ){
     NodePQ *last = myPQ->head;
- 
     if (myPQ->head == NULL) {
       ndPQ->prev = NULL;
+      ndPQ->next = NULL;
       myPQ->head = ndPQ;
       return;
     }
-  
     while (last->next != NULL)
       last = last->next;
   
     last->next = ndPQ;
     ndPQ->prev = last;
- 
+    ndPQ->next = NULL;
     return;
 }
 
@@ -158,6 +157,7 @@ int *createBoard(Node *parent, int *newBoard, int k){
   for(int i=0; i<k*k; i++){
     newBoard[i]=parent->board[i];
   }
+  printBoard(parent->board, k);
   return newBoard;
 }
 
@@ -193,7 +193,7 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     move = parent->board[(zeroRow*k-k)+zeroCol];
     //check HT
     createBoard(parent, newBoard, k);
-    newBoard[zeroPos] = move;
+    newBoard[zeroPos] = 99;
     newBoard[(zeroRow*k-k)+zeroCol] = 0;
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
@@ -351,7 +351,8 @@ int main(int argc, char **argv)
   insertPQ(myPQ,ndPQ);
   
   // BFS rotation, while loop
-  while(1){
+  int i=0;
+  while(i<20){
     Node *ptr = dequeuePQ(myPQ);
     if(checkGoal(ptr->board, goalState, k)){
       printBoard(ptr->board, k);
@@ -359,6 +360,7 @@ int main(int argc, char **argv)
       }
     else
       generateNeighbors(ptr, k, myHT, myPQ, size);
+    i++;
   }
   
   // print solution via printing array in reverse
