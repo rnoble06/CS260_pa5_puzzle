@@ -59,7 +59,7 @@ Node  *initializeNode(int move, int *board, Node *parent, Node *nextHT){
 }
 
 // Node for PQ
-NodePQ  *initializeNodePQ(Node *htNode, NodePQ *next, NodePQ *prev){
+NodePQ  *initializeNodePQ(Node *htNode, NodePQ *prev, NodePQ *next){
   NodePQ *newNode = malloc(sizeof(NodePQ));
   newNode->htNode = htNode;
   newNode->next = next;
@@ -143,7 +143,7 @@ void insertToTailPQ(PQ *myPQ, Node *nd){
     return;
   }
   
-  NodePQ *ndPQ = initializeNodePQ(nd, myPQ->tail->next, myPQ->tail);
+  NodePQ *ndPQ = initializeNodePQ(nd, myPQ->tail, myPQ->tail->next);
   myPQ->tail = ndPQ;
   return;
 }
@@ -372,8 +372,8 @@ int main(int argc, char **argv)
   // BFS rotation, while loop. Currently iterating fixed length until issues fixed.
   int i=0;
   while(1){
-    printPQ(myPQ);
-    printf("PQ ^\n");
+    //printPQ(myPQ);
+    //printf("PQ ^\n");
     Node *ptr = dequeuePQ(myPQ);
     if(ptr==NULL){
       printf("Empty List!!\n");
@@ -391,7 +391,7 @@ int main(int argc, char **argv)
     
   }
   
-  printHashTable(myHT);
+  //printHashTable(myHT);
   //*************************************************************************
   //*************************************************************************
   //*************************************************************************
