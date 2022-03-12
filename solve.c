@@ -162,8 +162,14 @@ int getZeroPos(int *board,int k){
   return zeroPos;
 }
 
+int *createBoard(Node *parent, int *newBoard, int k){
+  for(int i=0; i<k*k; i++){
+    newBoard[i]=parent->board[i];
+  }
+  return newBoard;
+}
+
 void generateNeighbors(Node *parent, int k){
-  // Take ptr from dequeue() ptr is a NodePQ
   // for array, to mimic matrix: array(index) = array(i*k+j)
   int zeroPos = getZeroPos(parent->board, k);
   int zeroRow = (int)zeroPos/k;
@@ -171,12 +177,19 @@ void generateNeighbors(Node *parent, int k){
   int maxRow = k*(k-1);
   int maxCol = (k-1);
   int move;
-  // find neighbor row-1, get move
-  
+  int newBoard[k*k];
+  printf("%d\n",zeroPos);
   if((zeroRow*k-k)>=0){
     move = parent->board[(zeroRow*k-k)+zeroCol];
     //check HT
+    createBoard(parent, newBoard, k);
+    newBoard[zeroPos] = move;
+    newBoard[(zeroRow*k-k)+zeroCol] = 0;
+    printBoard(newBoard, k);
     // if not in HT
+    if(){
+      
+    }
       // insert to HT
       // insert to PQ
   }
@@ -185,6 +198,10 @@ void generateNeighbors(Node *parent, int k){
   if((zeroRow*k+k)<=maxRow){
     move = parent->board[(zeroRow*k+k)+zeroCol];
     //check HT
+    createBoard(parent, newBoard, k);
+    newBoard[zeroPos] = move;
+    newBoard[(zeroRow*k+k)+zeroCol] = 0;
+    printBoard(newBoard, k);
     // if not in HT
       // insert to HT
       // insert to PQ
@@ -194,6 +211,10 @@ void generateNeighbors(Node *parent, int k){
   if((zeroCol-1)>=0){
     move = parent->board[(zeroRow)*k+zeroCol-1];
     //check HT
+    createBoard(parent, newBoard, k);
+    newBoard[zeroPos] = move;
+    newBoard[(zeroRow)*k+zeroCol-1] = 0;
+    printBoard(newBoard, k);
     // if not in HT
       // insert to HT
       // insert to PQ
@@ -203,10 +224,15 @@ void generateNeighbors(Node *parent, int k){
   if((zeroCol+1)<=maxCol){
     move = parent->board[(zeroRow)*k+zeroCol+1];
     //check HT
+    createBoard(parent, newBoard, k);
+    newBoard[zeroPos] = move;
+    newBoard[(zeroRow)*k+zeroCol+1] = 0;
+    printBoard(newBoard, k);
     // if not in HT
       // insert to HT
       // insert to PQ
   }
+  
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
