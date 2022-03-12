@@ -116,7 +116,7 @@ void insertHT(openHT *myHT, Node *nd, int position){
 }
 
 // insert to PQ
-void insertToHeadPQ(PQ *myPQ, NodePQ *ndPQ){
+void insertToTailPQ(PQ *myPQ, NodePQ *ndPQ){
     NodePQ *cur = myPQ->head;
     if (myPQ->head == NULL) {
       ndPQ->prev = NULL;
@@ -223,7 +223,7 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertToHeadPQ(myPQ,ndPQ);
+      insertToTailPQ(myPQ,ndPQ);
     }
     
   }
@@ -245,7 +245,7 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertToHeadPQ(myPQ,ndPQ);
+      insertToTailPQ(myPQ,ndPQ);
     }
     */
   }
@@ -267,7 +267,7 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertToHeadPQ(myPQ,ndPQ); 
+      insertToTailPQ(myPQ,ndPQ); 
     }
     */
   }
@@ -289,7 +289,7 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertToHeadPQ(myPQ,ndPQ);
+      insertToTailPQ(myPQ,ndPQ);
     }
     */
   }
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
   insertHT(myHT, nd, position);
   
   NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-  insertToHeadPQ(myPQ,ndPQ);
+  insertToTailPQ(myPQ,ndPQ);
   
   // BFS rotation, while loop. Currently iterating fixed length until issues fixed.
   int i=0;
