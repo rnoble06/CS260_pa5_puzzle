@@ -112,23 +112,23 @@ void insertHT(openHT *myHT, Node *nd, int position){
   while(ptr!=NULL){
     ptr=ptr->nextHT;
   }
-  nd->nextHT = myHT->table[position];
+  myHT->table[position] = nd;
 }
 
 // insert to PQ
-void insertPQ(PQ *myPQ, NodePQ *ndPQ){
-    NodePQ *last = myPQ->head;
+void insertToHeadPQ(PQ *myPQ, NodePQ *ndPQ){
+    NodePQ *cur = myPQ->head;
     if (myPQ->head == NULL) {
       ndPQ->prev = NULL;
       ndPQ->next = NULL;
       myPQ->head = ndPQ;
       return;
     }
-    while (last->next != NULL)
-      last = last->next;
+    while (cur->next != NULL)
+      cur = cur->next;
   
-    last->next = ndPQ;
-    ndPQ->prev = last;
+    cur->next = ndPQ;
+    ndPQ->prev = cur;
     ndPQ->next = NULL;
     return;
 }
@@ -140,9 +140,11 @@ Node *dequeuePQ(PQ *myPQ){
   if(myPQ->head!=NULL){
     ptrPQ = myPQ->head;
     myPQ->head = myPQ->head->next;
+    ptr = ptrPQ->htNode;
+    //free(ptrPQ);
+    return ptr;
   }
-  ptr = ptrPQ->htNode;
-  return ptr;
+  return NULL;
 }
 
 // printBoard array
@@ -163,13 +165,17 @@ int getZeroPos(int *board,int k){
   }
   return zeroPos;
 }
+
+// create neighbor board
 int *createBoard(Node *parent, int *newBoard, int k){
   for(int i=0; i<k*k; i++){
     newBoard[i]=parent->board[i];
   }
-  printBoard(parent->board, k);
+  //printBoard(parent->board, k);
   return newBoard;
 }
+
+// find board in HT
 int findHT(int *newBoard, openHT *myHT, int size, int k){
   int position = hash(newBoard, size, k);
   Node *ptr = myHT->table[position];
@@ -180,7 +186,7 @@ int findHT(int *newBoard, openHT *myHT, int size, int k){
         flag = 1;
       }
     }
-    if(flag = 0){
+    if(flag == 0){
       return 1;
     }
     ptr = ptr->nextHT;
@@ -202,19 +208,24 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     move = parent->board[(zeroRow*k-k)+zeroCol];
     //check HT
     createBoard(parent, newBoard, k);
-    newBoard[zeroPos] = 99;
+    newBoard[zeroPos] = move;
     newBoard[(zeroRow*k-k)+zeroCol] = 0;
+    printBoard(newBoard, k);
+    printf("newBoard^\n");
+    
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
+      printBoard(newBoard, k);
+      printf("newBoard^\n");
       int position = hash(newBoard, size, k);
       // insert to HT
       Node *nd = initializeNode(move, newBoard, parent, NULL);
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertPQ(myPQ,ndPQ);
-      
+      insertToHeadPQ(myPQ,ndPQ);
     }
+    
   }
 
   // find neighbor row+1, get move
@@ -224,6 +235,8 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow*k+k)+zeroCol] = 0;
+    //printBoard(newBoard, k);
+    /*
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
       int position = hash(newBoard, size, k);
@@ -232,9 +245,9 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertPQ(myPQ,ndPQ);
-      
+      insertToHeadPQ(myPQ,ndPQ);
     }
+    */
   }
 
   // find neighbor col-1, get move
@@ -244,6 +257,8 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow)*k+zeroCol-1] = 0;
+    //printBoard(newBoard, k);
+    /*
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
       int position = hash(newBoard, size, k);
@@ -252,9 +267,9 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertPQ(myPQ,ndPQ);
-      
+      insertToHeadPQ(myPQ,ndPQ); 
     }
+    */
   }
 
   // find neighbor col+1, get move
@@ -264,6 +279,8 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
     createBoard(parent, newBoard, k);
     newBoard[zeroPos] = move;
     newBoard[(zeroRow)*k+zeroCol+1] = 0;
+    //printBoard(newBoard, k);
+    /*
     // if not in HT
     if(!findHT(newBoard, myHT, size, k)){
       int position = hash(newBoard, size, k);
@@ -272,9 +289,9 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
       insertHT(myHT, nd, position);
       // insert to PQ
       NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-      insertPQ(myPQ,ndPQ);
-
+      insertToHeadPQ(myPQ,ndPQ);
     }
+    */
   }
   
 }
@@ -292,7 +309,6 @@ int checkGoal(int *ptrBoard, int *goalState, int k){
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
-
 int main(int argc, char **argv)
 {
 	FILE *fp_in,*fp_out;
@@ -318,79 +334,73 @@ int main(int argc, char **argv)
 	
 	getline(&line,&lineBuffSize,fp_in);//ignore the first line in file, which is a comment
 	fscanf(fp_in,"%d\n",&k);//read size of the board
-	//printf("k = %d\n", k); //make sure you read k properly for DEBUG purposes
 	getline(&line,&lineBuffSize,fp_in);//ignore the second line in file, which is a comment
-
 	int initial_board[k*k];//get kxk memory to hold the initial board
-	for(int i=0;i<k*k;i++)
-    {
+	for(int i=0;i<k*k;i++){
 		  fscanf(fp_in,"%d ",&initial_board[i]);
     }
 	//printBoard(initial_board, k);  // check board input properly
 	fclose(fp_in);
-  
 	////////////////////
 	// do the rest to solve the board
 	////////////////////
-  
   //-------------------------------------------------------------------------
   //create goalState for board
   int goalState[k*k];
-  for(int i=0;i<(k*k)-1;i++)
-    {
-		  goalState[i]=(i+1);
-    }
+  for(int i=0;i<(k*k)-1;i++){
+		goalState[i]=(i+1);
+  }
   goalState[(k*k)-1] = 0;
-  //printBoard(goalState, k);  //check goalState
   size = htSize(k);
-  // get zero position
-  zeroPos=getZeroPos(initial_board,k);
-  //printf("%d\n",zeroPos);
-  //-------------------------------------------------------------------------
-  
+  //*************************************************************************
+  //*************************************************************************
+  //*************************************************************************
   PQ *myPQ = initializelistPQ();
   openHT *myHT = initializeopenHashTable(size);
-
 
   //insert initial_board
   Node *nd = initializeNode(0, initial_board, NULL, NULL);
   int position = hash(nd->board,size,k);
   insertHT(myHT, nd, position);
-  NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
-  insertPQ(myPQ,ndPQ);
   
-  // BFS rotation, while loop
+  NodePQ  *ndPQ = initializeNodePQ(nd, NULL, NULL);
+  insertToHeadPQ(myPQ,ndPQ);
+  
+  // BFS rotation, while loop. Currently iterating fixed length until issues fixed.
   int i=0;
   while(i<20){
     Node *ptr = dequeuePQ(myPQ);
+    if(ptr==NULL)
+      break;
+    printBoard(ptr->board, k);
+    printf("parentBoard^\n");
     if(checkGoal(ptr->board, goalState, k)){
-      printBoard(ptr->board, k);
+      printf("Check board\n");
+      //printBoard(ptr->board, k);
       break;
       }
     else
       generateNeighbors(ptr, k, myHT, myPQ, size);
     i++;
   }
-  
+  //*************************************************************************
+  //*************************************************************************
+  //*************************************************************************
   // print solution via printing array in reverse
   
   //-------------------------------------------------------------------------
   //-------------------------------------------------------------------------
-
 	//once you are done, you can use the code similar to the one below to print the output into file
 	//if the board is NOT solvable use something as follows
 	fprintf(fp_out, "#moves\n");
 	fprintf(fp_out, "no solution\n");
-	
 	//if it is solvable, then use something as follows:
 	fprintf(fp_out, "#moves\n");
 	//probably within a loop, or however you stored proper moves, print them one by one by leaving a space between moves, as below
   /*
 	for(int i=0;i<numberOfMoves;i++)
 		fprintf(fp_out, "%d ", move[i]);
-
 	fclose(fp_out);
 */
 	return 0;
-
 }

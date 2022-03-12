@@ -112,7 +112,7 @@ void insertHT(openHT *myHT, Node *nd, int position){
   while(ptr!=NULL){
     ptr=ptr->nextHT;
   }
-  nd->nextHT = myHT->table[position];
+  myHT->table[position] = nd;
 }
 
 // insert to PQ
@@ -180,7 +180,7 @@ int findHT(int *newBoard, openHT *myHT, int size, int k){
         flag = 1;
       }
     }
-    if(flag = 0){
+    if(flag == 0){
       return 1;
     }
     ptr = ptr->nextHT;
