@@ -4,31 +4,33 @@
 #define DENOM 7
 //-------------------------------------------------------------------------
 // define functions
-// Node for HT and BFS
-typedef struct node
-{
+// Node for HT and BFS and LinkedList
+typedef struct node{
   int move;               // int moved to get to this board
   int *board;            // board
   struct node *parent;    // tracks for BFS
   struct node *nextHT;    // tracks for HT
 } Node;
 
-typedef struct nodePQ
-{
+// Node for PQ
+typedef struct nodePQ{
   struct node *htNode;   // HT node
   struct nodePQ *next;      // tracks for linkedList PQ
   struct nodePQ *prev;      // tracks for linkedList PQ
 } NodePQ;
 
 // linked list acting as priority queue
-typedef struct listPQ
-{
+typedef struct listPQ{
   NodePQ *head;
 } PQ;
 
+//linkedList for HT
+typedef struct linkedList{
+  Node *head;
+}LinkedList;
+
 // open hash table for storing boards
-typedef struct openHashTable
-{
+typedef struct openHashTable{
   int size;
   Node **table;
 } openHT;
@@ -42,6 +44,7 @@ Node  *initializeNode(int move, int *board, Node *parent, Node *nextHT){
   newNode->nextHT = nextHT;
   return newNode;
 }
+
 // Node for PQ
 NodePQ  *initializeNodePQ(Node *htNode, NodePQ *next, NodePQ *prev){
   NodePQ *newNode = malloc(sizeof(NodePQ));
@@ -58,13 +61,21 @@ PQ *initializelistPQ() {
   return newList;
 }
 
+// initialize list for HT
+LinkedList *init(){
+  LinkedList *newList = malloc(sizeof(LinkedList));
+  newList->head = NULL;
+  return newList;
+}
+
 // HT for storing previous boards
 openHT *initializeopenHashTable(int size) {
 	openHT *hashTable = malloc(sizeof(openHT));
   hashTable->size = size;
   hashTable->table = malloc(sizeof(Node*)*size);
   for(int i=0; i<size; i++){
-    hashTable->table[i] = NULL;
+    LinkedList *myList = init();
+    hashTable->table[i] = myList->head;
   }
   return hashTable;
 }
@@ -152,7 +163,6 @@ int getZeroPos(int *board,int k){
   }
   return zeroPos;
 }
-
 int *createBoard(Node *parent, int *newBoard, int k){
   for(int i=0; i<k*k; i++){
     newBoard[i]=parent->board[i];
@@ -160,7 +170,6 @@ int *createBoard(Node *parent, int *newBoard, int k){
   printBoard(parent->board, k);
   return newBoard;
 }
-
 int findHT(int *newBoard, openHT *myHT, int size, int k){
   int position = hash(newBoard, size, k);
   Node *ptr = myHT->table[position];
