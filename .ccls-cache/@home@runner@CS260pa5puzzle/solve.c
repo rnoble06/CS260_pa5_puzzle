@@ -312,6 +312,24 @@ void printPQ(PQ *myPQ){
       ptr = ptr->next;
     }
 }
+
+int solCheck(int *board, int k){
+  int polarity;
+  int i, j;
+  for(i=0;i<k*k;i++){
+    if(board[i]==0)
+      i++;
+    for(j=i+1;j<k*k;j++){
+      if(board[j]==0)
+        j++;
+      if(board[i]>board[j])
+        polarity++;
+    }
+  }
+  printBoard(board, k);
+  polarity = polarity%2;
+  return polarity;
+}
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 int main(int argc, char **argv)
@@ -368,14 +386,27 @@ int main(int argc, char **argv)
   
   // BFS rotation, while loop. Currently iterating fixed length until issues fixed.
   int i=0;
+  int flag = 0;
   while(1){
     //printPQ(myPQ);
     //printf("PQ ^\n");
+    if(flag==0){
+      flag = 1;
+      if(solCheck(initial_board, k)==1){
+        fprintf(fp_out, "#moves\n");
+  	    fprintf(fp_out, "no solution\n");
+        break;
+      }
+    }
+    
     Node *ptr = dequeuePQ(myPQ);
     if(ptr==NULL){
       printf("Empty List!!\n");
+      free(ptr);
+      // free stuff
       break;
     }
+
     
     if(checkGoal(ptr->board, goalState, k)==1){
       //printf("Check board\n");
@@ -399,6 +430,8 @@ int main(int argc, char **argv)
       }
       fprintf(fp_out, "\n");
       fclose(fp_out);
+      free(ptr);
+      // free stuff
       break;
     }
     else{
@@ -409,8 +442,7 @@ int main(int argc, char **argv)
   //-------------------------------------------------------------------------
 	//once you are done, you can use the code similar to the one below to print the output into file
 	//if the board is NOT solvable use something as follows
-	fprintf(fp_out, "#moves\n");
-	fprintf(fp_out, "no solution\n");
+	
 
 	return 0;
 }
