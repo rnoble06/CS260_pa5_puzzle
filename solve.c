@@ -16,7 +16,6 @@ typedef struct node{
 typedef struct nodePQ{
   struct node *htNode;   // HT node
   struct nodePQ *next;      // tracks for linkedList PQ
-  struct nodePQ *prev;      // tracks for linkedList PQ
 } NodePQ;
 
 // linked list acting as priority queue
@@ -59,11 +58,10 @@ Node  *initializeNode(int move, int *board, Node *parent, Node *nextHT){
 }
 
 // Node for PQ
-NodePQ  *initializeNodePQ(Node *htNode, NodePQ *prev, NodePQ *next){
+NodePQ  *initializeNodePQ(Node *htNode, NodePQ *next){
   NodePQ *newNode = malloc(sizeof(NodePQ));
   newNode->htNode = htNode;
   newNode->next = next;
-  newNode->prev = prev;
   return newNode;
 }
 
@@ -136,16 +134,18 @@ void insertHT(openHT *myHT, Node *nd, int position, int k){
 
 // insert to PQ
 void insertToTailPQ(PQ *myPQ, Node *nd){
-  if (myPQ->head == NULL) {
-    NodePQ *ndPQ = initializeNodePQ(nd, NULL, NULL);
+  if(myPQ->head==NULL){
+    NodePQ *ndPQ = initializeNodePQ(nd, NULL);
     myPQ->head = ndPQ;
     myPQ->tail = ndPQ;
     return;
   }
-  
-  NodePQ *ndPQ = initializeNodePQ(nd, myPQ->tail, myPQ->tail->next);
-  myPQ->tail = ndPQ;
-  return;
+  else{
+    NodePQ *ndPQ = initializeNodePQ(nd, myPQ->tail->next);
+    myPQ->tail->next = ndPQ;
+    myPQ->tail = ndPQ;
+    return;
+  }
 }
 
 // dequeue head from PQ
@@ -357,9 +357,6 @@ int main(int argc, char **argv)
   }
   goalState[(k*k)-1] = 0;
   size = htSize(k);
-  //*************************************************************************
-  //*************************************************************************
-  //*************************************************************************
   PQ *myPQ = initializelistPQ();
   openHT *myHT = initializeopenHashTable(size);
 
@@ -381,35 +378,39 @@ int main(int argc, char **argv)
     }
     
     if(checkGoal(ptr->board, goalState, k)==1){
-      printf("Check board\n");
-      //printBoard(ptr->board, k);
+      //printf("Check board\n");
+      int moves=0;
+      Node *start = ptr;
+      while(ptr->move!=0){
+        ptr=ptr->parent;
+        moves++;
+      }
+      int solution[moves];
+      int i=0;
+      while(start->move!=0){
+        solution[i] = start->move;
+        start=start->parent;
+        i++;
+      }
+      //print solution to file
+      fprintf(fp_out, "#moves\n");
+      for(int i = moves-1; i>=0; i--){
+        fprintf(fp_out, "%d ",solution[i]);
+      }
+      fprintf(fp_out, "\n");
+      fclose(fp_out);
       break;
     }
     else{
       generateNeighbors(ptr, k, myHT, myPQ, size);
     }
-    
   }
   
-  //printHashTable(myHT);
-  //*************************************************************************
-  //*************************************************************************
-  //*************************************************************************
-  // print solution via printing array in reverse
-  
-  //-------------------------------------------------------------------------
   //-------------------------------------------------------------------------
 	//once you are done, you can use the code similar to the one below to print the output into file
 	//if the board is NOT solvable use something as follows
 	fprintf(fp_out, "#moves\n");
 	fprintf(fp_out, "no solution\n");
-	//if it is solvable, then use something as follows:
-	fprintf(fp_out, "#moves\n");
-	//probably within a loop, or however you stored proper moves, print them one by one by leaving a space between moves, as below
-  /*
-	for(int i=0;i<numberOfMoves;i++)
-		fprintf(fp_out, "%d ", move[i]);
-	fclose(fp_out);
-*/
+
 	return 0;
 }
