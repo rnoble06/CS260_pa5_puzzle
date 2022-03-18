@@ -425,8 +425,9 @@ int main(int argc, char **argv)
     
     Node *ptr = dequeuePQ(myPQ);
     if(ptr==NULL){
-      printf("Empty List!!\n");
-      //free(ptr);
+      //printf("Empty List!!\n");
+      fprintf(fp_out, "#moves\n");
+  	  fprintf(fp_out, "no solution\n");
       break;
     }
 
