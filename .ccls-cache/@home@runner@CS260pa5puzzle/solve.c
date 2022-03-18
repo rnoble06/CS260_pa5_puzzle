@@ -156,7 +156,6 @@ Node *dequeuePQ(PQ *myPQ){
     headPQ = myPQ->head;
     myPQ->head = myPQ->head->next;
     headNode = headPQ->htNode;
-    //free(headPQ);
     return headNode;
   }
   return NULL;
@@ -294,23 +293,48 @@ void generateNeighbors(Node *parent, int k, openHT *myHT, PQ *myPQ, int size){
   }
 }
 
-void printHashTable(openHT *myHT){
+void printHashTable(openHT *myHT, int k){
   for (int i=0; i<myHT->size;i++){
     printf("Row %d: [",i);
     Node *ptr = myHT->table[i];
     while(ptr!=NULL){
-      printBoard(ptr->board, 3);
+      printBoard(ptr->board, k);
       ptr = ptr->nextHT;
     }
     printf(" ]\n");
   }
 }
-void printPQ(PQ *myPQ){
+
+void deleteHashTable(openHT *myHT){
+  for (int i=0; i<myHT->size;i++){
+    Node *ptr = myHT->table[i];
+    Node *freeMe = ptr;
+    while(ptr!=NULL){
+      freeMe = ptr;
+      ptr = ptr->nextHT;
+      free(freeMe);
+    }
+    free(ptr);
+  }
+}
+
+void printPQ(PQ *myPQ, int k){
   NodePQ *ptr = myPQ->head;
     while(ptr!=NULL){
-      printBoard(ptr->htNode->board, 3);
+      printBoard(ptr->htNode->board, k);
       ptr = ptr->next;
     }
+}
+
+void deletePQ(PQ *myPQ){
+  NodePQ *ptr = myPQ->head;
+  NodePQ *freeMe = ptr;
+    while(ptr!=NULL){
+      freeMe = ptr;
+      ptr = ptr->next;
+      free(freeMe);
+    }
+  free(ptr);
 }
 
 int solCheck(int *board, int k){
@@ -326,7 +350,6 @@ int solCheck(int *board, int k){
         polarity++;
     }
   }
-  printBoard(board, k);
   polarity = polarity%2;
   return polarity;
 }
@@ -388,8 +411,9 @@ int main(int argc, char **argv)
   int i=0;
   int flag = 0;
   while(1){
-    //printPQ(myPQ);
+    //printPQ(myPQ, k);
     //printf("PQ ^\n");
+    
     if(flag==0){
       flag = 1;
       if(solCheck(initial_board, k)==1){
@@ -402,8 +426,7 @@ int main(int argc, char **argv)
     Node *ptr = dequeuePQ(myPQ);
     if(ptr==NULL){
       printf("Empty List!!\n");
-      free(ptr);
-      // free stuff
+      //free(ptr);
       break;
     }
 
@@ -430,19 +453,17 @@ int main(int argc, char **argv)
       }
       fprintf(fp_out, "\n");
       fclose(fp_out);
-      free(ptr);
-      // free stuff
+      //free(ptr);
       break;
     }
     else{
       generateNeighbors(ptr, k, myHT, myPQ, size);
     }
   }
-  
+  deleteHashTable(myHT);
+  deletePQ(myPQ);
+  free(myHT);
+  free(myPQ);
   //-------------------------------------------------------------------------
-	//once you are done, you can use the code similar to the one below to print the output into file
-	//if the board is NOT solvable use something as follows
-	
-
 	return 0;
 }
