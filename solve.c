@@ -362,12 +362,16 @@ int main(int argc, char **argv)
 	fp_in = fopen(argv[1], "r");
 	if (fp_in == NULL){
 		printf("Could not open a file.\n");
+    printf("Arguments: ./solve puzzle_file_in.txt solution_file_out.txt\n");
+    printf("Ex: ./solve 3boardEasy.txt out.txt\n");
 		return -1;
 	}
 	
 	fp_out = fopen(argv[2], "w");
 	if (fp_out == NULL){
 		printf("Could not open a file.\n");
+    printf("Arguments: ./solve puzzle_file_in.txt solution_file_out.txt\n");
+    printf("Ex: ./solve 3boardEasy.txt out.txt\n");
 		return -1;
 	}
 	
